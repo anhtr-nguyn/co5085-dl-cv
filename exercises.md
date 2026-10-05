@@ -7,9 +7,9 @@ title: E1–E3
 
 ## E1–E3: Bài tập nền tảng
 
-- **Dataset dùng chung:** <MNIST / Fashion-MNIST / CIFAR-10>
+- **Dataset dùng chung:** *(MNIST / Fashion-MNIST / CIFAR-10)*
 - **Code:** [E1](https://github.com/anhtr-nguyn/co5085-dl-cv/tree/main/E1) · [E2](https://github.com/anhtr-nguyn/co5085-dl-cv/tree/main/E2) · [E3](https://github.com/anhtr-nguyn/co5085-dl-cv/tree/main/E3)
-- **Báo cáo PDF chung:** [reports/exercises.pdf](reports/exercises.pdf) *(cập nhật: W9 thêm E1+E2, W10 thêm E3)*
+- **Báo cáo PDF chung:** `reports/exercises.pdf` *(cập nhật: W9 thêm E1+E2, W10 thêm E3)*
 
 | Bài | Nội dung | Hạn |
 |---|---|---|

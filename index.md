@@ -11,7 +11,7 @@ title: Trang chủ
 | **Thành viên** | Nguyễn Trọng Anh - 2670251 |
 | **Giảng viên** | Lê Thành Sách, Nguyễn Quốc Minh |
 | **Môn học** | CO5085 – Học kỳ 261 (2026–2027) |
-| **Repo** | [github.com/<username>/co5085-dl-cv](https://github.com/anhtr-nguyn/co5085-dl-cv) |
+| **Repo** | [github.com/anhtr-nguyn/co5085-dl-cv](https://github.com/anhtr-nguyn/co5085-dl-cv) |
 
 ## Bài nộp
 
