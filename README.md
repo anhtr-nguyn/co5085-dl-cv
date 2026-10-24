@@ -1,6 +1,6 @@
 # CO5085 – Học sâu và ứng dụng trong thị giác máy tính (HK 261)
 
-Nhóm: NTA· Thành viên: Nguyễn Trọng Anh - 2670251
+Nhóm: NTA · Thành viên: Nguyễn Trọng Anh - 2670251
 Giảng viên: Lê Thành Sách, Nguyễn Quốc Minh
 Trang web: https://anhtr-nguyn.github.io/co5085-dl-cv/
 

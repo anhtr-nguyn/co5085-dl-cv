@@ -220,4 +220,14 @@ __marimo__/
 .streamlit/secrets.toml
 data_cache/
 .vscode/
-outputs/
+
+# outputs: keep logs, metrics, figures; ignore checkpoints, predictions, duplicates
+**/outputs/**
+!**/outputs/**/
+**/outputs/_duplicates/
+!**/outputs/results.*
+!**/outputs/figs/**
+!**/outputs/runs/*/config.yaml
+!**/outputs/runs/*/log.json
+!**/outputs/runs/*/test_metrics.json
+!**/outputs/runs/*/figs/**
