@@ -17,10 +17,10 @@ NUM_CLASSES = 10
 
 
 def load_config():
-    """Đọc YAML config; cho phép ghi đè nhanh từ CLI: --set train.lr=0.01 train.seed=1"""
+    """ Read yaml config, can override from cli"""
     p = argparse.ArgumentParser()
     p.add_argument("--config", required=True, help="e.g. config/cnn.yaml")
-    p.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE",
+    p.add_argument("--set", nargs="*", action="extend", default=[], metavar="KEY=VALUE",
                    help="override config entries, e.g. train.seed=1 data.augment=true")
     args = p.parse_args()
 

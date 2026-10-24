@@ -28,8 +28,8 @@ def build_transforms(augment: bool = True):
 
     train_tf = transforms.Compose(
         [
+            transforms.RandomCrop(32, padding=4),   
             transforms.RandomHorizontalFlip(),
-            transforms.ColorJitter(brightness=0.3, contrast=0.3, hue= 0.3, saturation=0.3),
             transforms.ToTensor(),
             transforms.Normalize(mean=MEAN, std=STD)
         ]
