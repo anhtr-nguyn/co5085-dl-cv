@@ -1,0 +1,248 @@
+import argparse
+import json
+import math
+import os
+import time
+from datetime import datetime
+
+import torch
+import torch.nn as nn
+import yaml
+from tqdm import tqdm
+
+from data import get_dataloaders
+from models import MyTinyViT, count_params   # đổi nếu file model của bạn tên khác
+from utils import set_seed
+
+NUM_CLASSES = 10
+
+
+def load_config():
+    """Đọc yaml, cho phép override từ CLI: --set train.seed=1 model.params.msa_type=torch"""
+    p = argparse.ArgumentParser()
+    p.add_argument("--config", required=True, help="e.g. config/tinyvit.yaml")
+    p.add_argument("--set", nargs="*", action="extend", default=[], metavar="KEY=VALUE")
+    args = p.parse_args()
+
+    with open(args.config) as f:
+        cfg = yaml.safe_load(f)
+    for item in args.set:
+        key, value = item.split("=", 1)
+        *parents, leaf = key.split(".")
+        node = cfg
+        for k in parents:
+            node = node[k]
+        if leaf not in node:
+            raise KeyError(f"Unknown config key '{key}'")
+        node[leaf] = yaml.safe_load(value)
+    return cfg
+
+
+def make_run_dir(cfg):
+    p = cfg["model"]["params"]
+    parts = [p["tokenizer_type"], p["msa_type"]]
+    if not p.get("use_cls_token", True):
+        parts.append("nocls")
+    if not p.get("use_pos_embed", True):
+        parts.append("nopos")
+    parts += [f"aug{int(cfg['data']['augment'])}", f"s{cfg['train']['seed']}"]
+    name = "_".join(parts)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_dir = os.path.join(cfg["output"]["root"], f"{name}_{stamp}")
+    os.makedirs(run_dir) 
+    return name, run_dir
+
+
+def build_optimizer(model, lr, weight_decay):
+    decay, no_decay = [], []
+    for name, p in model.named_parameters():
+        if not p.requires_grad:
+            continue
+        # bias, LayerNorm (ndim<2) và cls_token/pos_embed (ndim=3) không weight decay
+        if p.ndim < 2 or name.endswith(("pos_embed", "cls_token")):
+            no_decay.append(p)
+        else:
+            decay.append(p)
+    return torch.optim.AdamW(
+        [{"params": decay, "weight_decay": weight_decay},
+         {"params": no_decay, "weight_decay": 0.0}], lr=lr)
+
+
+def build_scheduler(optimizer, total_steps, warmup_steps):
+    def lr_lambda(step):
+        if step < warmup_steps:
+            return (step + 1) / warmup_steps
+        progress = (step - warmup_steps) / max(1, total_steps - warmup_steps)
+        return 0.5 * (1.0 + math.cos(math.pi * progress))
+    return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+
+def update_confmat(cm, preds, y):
+    # cm[i, j] = số mẫu có nhãn thật i, dự đoán j
+    cm += torch.bincount(y * NUM_CLASSES + preds,
+                         minlength=NUM_CLASSES ** 2).view(NUM_CLASSES, NUM_CLASSES)
+
+
+def metrics_from_confmat(cm, per_class=False):
+    cm = cm.double().cpu()
+    tp = cm.diag()
+    precision = tp / cm.sum(0).clamp(min=1)
+    recall = tp / cm.sum(1).clamp(min=1)
+    f1 = 2 * precision * recall / (precision + recall).clamp(min=1e-12)
+    out = dict(acc=(tp.sum() / cm.sum()).item(), precision=precision.mean().item(),
+               recall=recall.mean().item(), f1=f1.mean().item())
+    if per_class:
+        out["per_class"] = dict(precision=precision.tolist(), recall=recall.tolist(),
+                                f1=f1.tolist(), confusion_matrix=cm.long().tolist())
+    return out
+
+
+def fmt_metrics(m):
+    return (f"loss {m['loss']:.4f} acc {m['acc']:.4f} P {m['precision']:.4f} "
+            f"R {m['recall']:.4f} F1 {m['f1']:.4f}")
+
+
+def train_one_epoch(model, loader, criterion, optimizer, scheduler, device, grad_clip=0.0):
+    model.train()
+    loss_sum = torch.zeros((), device=device)   # cộng dồn trên GPU, .item() một lần cuối epoch
+    cm = torch.zeros(NUM_CLASSES, NUM_CLASSES, dtype=torch.long, device=device)
+    n = 0
+    for x, y in tqdm(loader, leave=False):
+        x = x.to(device, non_blocking=True)
+        y = y.to(device, non_blocking=True)
+
+        optimizer.zero_grad(set_to_none=True)
+        logits = model(x)
+        loss = criterion(logits, y)
+        loss.backward()
+        if grad_clip > 0:
+            nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+        optimizer.step()
+        scheduler.step()                         # theo iteration, không phải theo epoch
+
+        bs = y.size(0)
+        loss_sum += loss.detach() * bs
+        update_confmat(cm, logits.detach().argmax(1), y)
+        n += bs
+    return dict(loss=loss_sum.item() / n, **metrics_from_confmat(cm))
+
+
+@torch.no_grad()
+def evaluate(model, loader, criterion, device, return_preds=False, per_class=False):
+    """return_preds=True -> (metrics, preds, labels, conf)"""
+    model.eval()
+    loss_sum = torch.zeros((), device=device)
+    cm = torch.zeros(NUM_CLASSES, NUM_CLASSES, dtype=torch.long, device=device)
+    n = 0
+    all_preds, all_labels, all_conf = [], [], []
+    for x, y in loader:
+        x = x.to(device, non_blocking=True)
+        y = y.to(device, non_blocking=True)
+        logits = model(x)
+        loss_sum += criterion(logits, y) * y.size(0)
+        conf, preds = logits.softmax(1).max(1)
+        update_confmat(cm, preds, y)
+        n += y.size(0)
+        if return_preds:
+            all_preds.append(preds.cpu())
+            all_labels.append(y.cpu())
+            all_conf.append(conf.cpu())
+    metrics = dict(loss=loss_sum.item() / n, **metrics_from_confmat(cm, per_class))
+    if return_preds:
+        return metrics, torch.cat(all_preds), torch.cat(all_labels), torch.cat(all_conf)
+    return metrics
+
+
+def main():
+    cfg = load_config()
+    mcfg, dcfg, tcfg = cfg["model"], cfg["data"], cfg["train"]
+    set_seed(tcfg["seed"])
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    tag, run_dir = make_run_dir(cfg)
+    ckpt_path = os.path.join(run_dir, "best.pt")
+    with open(os.path.join(run_dir, "config.yaml"), "w") as f:
+        yaml.safe_dump(cfg, f, sort_keys=False)
+
+    # split_path=None: tránh nhiều process chạy song song cùng ghi một file split
+    train_loader, val_loader, _ = get_dataloaders(
+        batch_size=dcfg["batch_size"], val_size=dcfg["val_size"], seed=dcfg["split_seed"],
+        num_workers=dcfg["num_workers"], augment=dcfg["augment"], split_path=None)
+
+    model = MyTinyViT(**mcfg["params"]).to(device)
+    n_params = count_params(model)
+    tok_params = count_params(model.tokenizer)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = build_optimizer(model, tcfg["lr"], tcfg["weight_decay"])
+
+    epochs = tcfg["epochs"]
+    steps_per_epoch = len(train_loader)
+    scheduler = build_scheduler(optimizer, epochs * steps_per_epoch,
+                                tcfg["warmup_epochs"] * steps_per_epoch)
+
+    print(f"[{tag}] device={device} params={n_params:,} (tokenizer {tok_params:,}) -> {run_dir}")
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats()
+
+    history, best_acc, best_epoch, best_val = [], 0.0, 0, None
+    t_start = time.time()
+    train_time = 0.0
+
+    for epoch in range(1, epochs + 1):
+        t0 = time.time()
+        tr = train_one_epoch(model, train_loader, criterion, optimizer, scheduler,
+                             device, tcfg.get("grad_clip", 0.0))
+        t1 = time.time()                         # train_one_epoch đã sync GPU qua .item()
+        train_time += t1 - t0
+
+        do_eval = epoch % tcfg["eval_every"] == 0 or epoch == epochs
+        va = evaluate(model, val_loader, criterion, device, per_class=True) if do_eval else None
+        t2 = time.time()
+        lr = optimizer.param_groups[0]["lr"]
+
+        record = dict(epoch=epoch, lr=lr, train_s=t1 - t0, eval_s=t2 - t1,
+                      **{f"train_{k}": v for k, v in tr.items()})
+        if va is not None:
+            record.update({f"val_{k}": v for k, v in va.items()})
+        history.append(record)
+
+        if va is not None and va["acc"] > best_acc:
+            best_acc, best_epoch, best_val = va["acc"], epoch, va
+            torch.save({"model": model.state_dict(), "epoch": epoch,
+                        "val_metrics": va, "config": cfg}, ckpt_path)
+
+        print(f"ep {epoch:3d}/{epochs} | lr {lr:.2e} | train {t1 - t0:.1f}s eval {t2 - t1:.1f}s\n"
+              f"    train | {fmt_metrics(tr)}")
+        if va is not None:
+            print(f"    val   | {fmt_metrics(va)}{'  *best' if epoch == best_epoch else ''}")
+
+    total_time = time.time() - t_start
+    peak_mem = (torch.cuda.max_memory_allocated() / 2**20) if device.type == "cuda" else None
+
+    # Dự đoán của best model trên val, dùng cho confusion matrix / error samples
+    model.load_state_dict(torch.load(ckpt_path, map_location=device)["model"])
+    _, preds, labels, conf = evaluate(model, val_loader, criterion, device, return_preds=True)
+    torch.save({"preds": preds, "labels": labels, "conf": conf},
+               os.path.join(run_dir, "val_preds.pt"))
+
+    summary = dict(tag=tag, config=cfg, params=n_params, tokenizer_params=tok_params,
+                   best_epoch=best_epoch, best_val_acc=best_acc, best_val_metrics=best_val,
+                   train_time_s=train_time, total_time_s=total_time,
+                   time_per_epoch_s=train_time / epochs, peak_mem_mb=peak_mem,
+                   history=history)
+    with open(os.path.join(run_dir, "log.json"), "w") as f:
+        json.dump(summary, f, indent=2)
+
+    try:
+        from visualize import visualize_run
+    except ImportError:
+        visualize_run = None
+    if visualize_run is not None:
+        visualize_run(run_dir)
+
+    print(f"[{tag}] best @ epoch {best_epoch} | {fmt_metrics(best_val)} | "
+          f"train {train_time:.0f}s | run dir: {run_dir}")
+
+
+if __name__ == "__main__":
+    main()

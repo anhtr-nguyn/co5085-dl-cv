@@ -1,0 +1,32 @@
+model:
+  name: tinyvit
+  params:
+    tokenizer_type: patch
+    msa_type: torch
+    embed_dim: 128
+    num_heads: 4
+    num_layers: 4
+    mlp_ratio: 2.0
+    qkv_bias: true
+    attn_drop: 0.1
+    ffn_dropout: 0.1
+    emb_dropout: 0.1
+    use_cls_token: true
+    use_pos_embed: true
+    patch_size: 4
+data:
+  batch_size: 128
+  val_size: 10000
+  split_seed: 912
+  num_workers: 4
+  augment: true
+train:
+  epochs: 100
+  warmup_epochs: 5
+  lr: 0.001
+  weight_decay: 0.05
+  grad_clip: 1.0
+  eval_every: 1
+  seed: 42
+output:
+  root: outputs/runs

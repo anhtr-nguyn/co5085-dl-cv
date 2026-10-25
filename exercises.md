@@ -14,7 +14,7 @@ title: E1–E3
 | Bài | Nội dung | Trạng thái | Hạn |
 |---|---|---|---|
 | E1 | Softmax / MLP / CNN | Hoàn thành | 02/11/2026 |
-| E2 | MSA tự viết vs PyTorch, tokenization | Đang làm | 02/11/2026 |
+| E2 | MSA tự viết vs PyTorch, tokenization | Hoàn thành | 02/11/2026 |
 | E3 | LSTM / GRU | Chưa làm | 09/11/2026 |
 
 ## E1
@@ -33,7 +33,17 @@ Softmax, MLP và CNN trên ảnh CIFAR-10, training loop tự viết. Adam lr 1e
 
 ## E2
 
-MSA tự viết (Linear, einsum, softmax, ghép head) đối chiếu với `nn.MultiheadAttention`, trong một encoder nông để phân loại CIFAR-10; so sánh các cách lấy token: patch, hàng (row), CNN-stem. *(Kết quả sẽ cập nhật.)*
+MSA tự viết (Linear, nhân ma trận, softmax, ghép head) đối chiếu với `nn.MultiheadAttention`, trong một ViT nông (d=128, 4 khối Pre-LN, token CLS, positional embedding) để phân loại CIFAR-10; so sánh ba cách lấy token: patch 4×4, hàng (row), CNN-stem. AdamW + warmup/cosine, 100 epoch, có augmentation, 5 seed. Chi tiết: [E2/README.md](https://github.com/anhtr-nguyn/co5085-dl-cv/blob/main/E2/README.md).
+
+| Tokenizer | #Token | Params | Test acc, MSA tự viết (%) | Test acc, MSA PyTorch (%) | Peak mem train, tự viết / PyTorch (MB) |
+|---|---|---|---|---|---|
+| Patch 4×4 | 64 | 546,186 | 80.37 ± 0.59 | 79.93 ± 0.28 | 325 / 267 |
+| Row | 32 | 548,234 | 71.85 ± 0.30 | 72.00 ± 0.51 | 161 / 151 |
+| CNN-stem | 64 | 691,082 | 85.42 ± 0.33 | 85.47 ± 0.21 | 692 / 406 |
+
+- MSA tự viết và PyTorch cho accuracy tương đương (chênh lệch nhỏ hơn dao động giữa các seed) và tốc độ train như nhau; bản PyTorch ít bộ nhớ hơn và inference nhanh hơn 12–32% nhờ kernel attention hợp nhất.
+- CNN-stem > patch > row: inductive bias cục bộ của convolution giúp ViT nhỏ học tốt hơn trên 40k ảnh; row mất cấu trúc theo chiều ngang.
+- ViT tốt nhất (85.5%) vẫn thua CNN của E1 (87.75%); tăng model patch lên 3.2M tham số chỉ đạt 81.9%.
 
 ## E3
 

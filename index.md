@@ -18,7 +18,7 @@ title: Trang chủ
 | Bài | Nội dung | Trang | Trạng thái | Hạn |
 |---|---|---|---|---|
 | E1 | Softmax / MLP / CNN trên CIFAR-10 | [Xem](exercises.html#e1) | Hoàn thành | 02/11/2026 |
-| E2 | MSA tự viết vs PyTorch, tokenization | [Xem](exercises.html#e2) | Đang làm | 02/11/2026 |
+| E2 | MSA tự viết vs PyTorch, tokenization | [Xem](exercises.html#e2) | Hoàn thành | 02/11/2026 |
 | E3 | LSTM / GRU | [Xem](exercises.html#e3) | Chưa làm | 09/11/2026 |
 | A1 | CNN vs Transformer trên Food-101 | [Xem](a1.html) | Đang thực hiện | A1.1: 26/10/2026 · A1.2: 09/11/2026 |
 | A2 | Chủ đề tự chọn + phân tích paper | [Xem](a2.html) | Chưa bắt đầu | A2.1: 02/11/2026 · A2.2: 16/11/2026 |
