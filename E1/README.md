@@ -70,7 +70,7 @@ Hình: `outputs/runs/<run>/figs/` (learning curves, confusion matrix val/test, m
 - CNN vượt xa hai model trên vector flatten (83.6% so với 53.6% và 37.4%, cùng điều kiện không aug) dù ít tham số hơn MLP gần 6 lần: conv + pooling khai thác tính cục bộ và chia sẻ trọng số, còn flatten làm mất cấu trúc không gian.
 - Augmentation (crop + flip) chỉ có lợi cho CNN: +4.2 điểm (83.6% → 87.8%), giảm overfit (train acc 100% → 98.5%, best epoch dời từ 26–76 về 83–99). Với MLP và softmax, augmentation làm giảm accuracy (−3.8 và −2.1 điểm): model trên vector flatten không bất biến với dịch chuyển, nên ảnh bị crop lệch vài pixel trở thành một vector khác hẳn, khiến bài toán khó hơn chứ không đóng vai trò regularization (train acc MLP tụt từ 97.5% xuống 69%).
 - MLP không aug overfit mạnh (train 97.5%, val 53.7%); softmax underfit (train khoảng 45%, best val sớm ở epoch 7 rồi val loss tăng nhẹ).
-- Cặp lớp nhầm nhiều nhất ở mọi model là cat ↔ dog; cat có F1 thấp nhất (0.70 với CNN không aug, 0.76 có aug, 0.36 với MLP, 0.20 với softmax). Model flatten còn nhầm theo màu và nền: softmax đoán frog cho nhiều ảnh deer/cat, nhầm airplane → ship (nền trời/biển xanh) khi có aug; MLP nhầm automobile ↔ truck.
+- Gộp cả hai chiều, cặp lớp nhầm nhiều nhất ở mọi model (không aug) là cat ↔ dog (riêng softmax, nhầm một chiều lớn nhất là deer → frog, 27.2% ảnh deer); cat có F1 thấp nhất (0.70 với CNN không aug, 0.76 có aug, 0.36 với MLP, 0.20 với softmax). Model flatten còn nhầm theo màu và nền: softmax đoán frog cho nhiều ảnh deer/cat, nhầm airplane → ship (nền trời/biển xanh) khi có aug; MLP nhầm automobile ↔ truck.
 
 ## Cấu trúc thư mục
     E1/
@@ -82,4 +82,4 @@ Hình: `outputs/runs/<run>/figs/` (learning curves, confusion matrix val/test, m
         └── results.{md,csv}
 
 ## Sử dụng AI
-Phần sanity test cuối `models.py` (so khớp my vs torch, hoán vị token, gradient), phần `visualize.py` và `evaluate.py` cho các thư mục runs được viết với sự hỗ trự của Claude.ai.
+Phần sanity test cuối `models.py` (so khớp my vs torch, hoán vị token, gradient), phần `visualize.py` và `evaluate.py` cho các thư mục runs được viết với sự hỗ trợ của Claude.ai.

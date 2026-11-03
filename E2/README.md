@@ -56,7 +56,7 @@ AdamW (weight decay 0.05, không decay bias/LN/CLS/pos_embed), lr 1e-3, warmup 5
 Chênh lệch test acc my − torch theo từng seed (điểm %): patch −0.22…+1.18 (trung bình +0.44), row −0.70…+0.69 (−0.14), cnn −0.46…+0.51 (−0.05).
 
 ### Tốc độ (từ `outputs/bench.md`, A100, batch 128, fp32)
-| Tokenizer | MSA | #Token | Train (ms/iter) | Inference (img/s) | Peak mem khi train (MB) |
+| Tokenizer | MSA | #Token | Train (ms/iter) | Inference (img/s) | Peak mem trong bench (MB, `cudnn.benchmark=True`) |
 |---|---|---|---|---|---|
 | patch | my | 64 | 10.36 | 59,179 | 325 |
 | patch | torch | 64 | 10.43 | 69,251 | 267 |
@@ -77,9 +77,9 @@ Thời gian/epoch trong `outputs/results.md` (3.7–4.1 s) đo khi 6 job chạy 
 Hình: `outputs/runs/<run>/figs/` (learning curves, confusion matrix val/test, mẫu lỗi), `outputs/figs/compare_curves.png`.
 
 ## Nhận xét
-- **MSA tự viết vs PyTorch:** accuracy tương đương với cả 3 tokenizer. Chênh lệch trung bình (≤ 0.44 điểm) nhỏ hơn dao động giữa các seed, và dấu chênh lệch đổi theo seed. Điều này khớp với sanity test: hai bản tính cùng một phép toán, khác biệt chỉ đến từ khởi tạo và thứ tự phép tính số thực.
-- **Chi phí:** khi train, hai bản nhanh như nhau (khoảng 10.4–11 ms/iter), nhưng bản PyTorch tốn ít bộ nhớ hơn: 406 so với 692 MB với CNN-stem, 267 so với 325 MB với patch. Với `need_weights=False`, `nn.MultiheadAttention` gọi kernel `scaled_dot_product_attention` hợp nhất, không lưu ma trận attention N×N cho backward như bản tự viết. Khi inference, bản PyTorch nhanh hơn 12–32% nhờ fast path hợp nhất cả khối attention.
-- **Tokenizer:** CNN-stem (85.4%) > patch (80.1%) > row (71.9%). CNN-stem đưa inductive bias cục bộ của convolution vào trước attention, mỗi token đã tổng hợp thông tin trong một vùng lân cận. Patch 4×4 chỉ chiếu tuyến tính từng ô, nên attention phải tự học quan hệ không gian từ 40k ảnh. Row gộp cả một hàng 32 pixel vào một token, làm mất cấu trúc theo chiều ngang (chỉ còn 32 token), và kém nhất. Row cũng rẻ nhất (151–161 MB, inference nhanh nhất) vì số token ít nhất.
+- **MSA tự viết vs PyTorch:** accuracy tương đương với cả 3 tokenizer. Chênh lệch trung bình (≤ 0.44 điểm) cùng cỡ độ lệch chuẩn giữa các seed, và dấu chênh lệch đổi theo seed. Điều này khớp với sanity test: hai bản tính cùng một phép toán, khác biệt chỉ đến từ khởi tạo và thứ tự phép tính số thực.
+- **Chi phí:** khi train, hai bản nhanh như nhau (khoảng 10.4–11 ms/iter), nhưng bản PyTorch tốn ít bộ nhớ hơn (peak mem trong log train): 406 so với 463 MB với CNN-stem, 267 so với 324 MB với patch, 152 so với 163 MB với row. Với `need_weights=False`, `nn.MultiheadAttention` gọi kernel `scaled_dot_product_attention` hợp nhất, không lưu ma trận attention N×N cho backward như bản tự viết. Khi inference, bản PyTorch nhanh hơn 12–32% nhờ fast path hợp nhất cả khối attention.
+- **Tokenizer:** CNN-stem (85.4%) > patch (80.1%) > row (71.9%). CNN-stem đưa inductive bias cục bộ của convolution vào trước attention, mỗi token đã tổng hợp thông tin trong một vùng lân cận. Patch 4×4 chỉ chiếu tuyến tính từng ô, nên attention phải tự học quan hệ không gian từ 40k ảnh. Row gộp cả một hàng 32 pixel vào một token, làm mất cấu trúc theo chiều ngang (chỉ còn 32 token), và kém nhất. Row cũng rẻ nhất (152–163 MB, inference nhanh nhất) vì số token ít nhất.
 - **Overfitting:** CNN-stem gần như thuộc tập train (99.3%) nhưng vẫn tổng quát tốt nhất. Patch và row dừng ở khoảng 93–95% train acc. Best epoch nằm ở cuối quá trình train với mọi cấu hình, cho thấy cosine schedule + weight decay 0.05 + dropout giữ được val acc tới cuối.
 - **Capacity:** tăng model patch lên 6 lần tham số (d256, mlp 4) và gấp đôi số epoch chỉ thêm khoảng 2 điểm (81.9%), vẫn thua CNN-stem nhỏ (0.69M tham số). Nút thắt của ViT ở đây là thiếu inductive bias khi train from scratch trên tập nhỏ, không phải số tham số.
 - **So với E1:** ViT tốt nhất (CNN-stem, 85.5%) vẫn thua CNN thuần của E1 (87.75% với cùng augmentation), nhưng chỉ dùng chưa bằng một nửa số tham số (0.69M so với 1.56M). Cặp nhầm nhiều nhất vẫn là cat ↔ dog ở mọi cấu hình (cat có F1 thấp nhất: 0.54 với row, 0.64 với patch, 0.73 với CNN-stem). Row còn nhầm automobile ↔ truck, patch nhầm deer → horse.
@@ -92,4 +92,4 @@ Hình: `outputs/runs/<run>/figs/` (learning curves, confusion matrix val/test, m
     └── outputs/                (chỉ commit log, metric, hình; không commit *.pt)
 
 ## Sử dụng AI
-Phần sanity test cuối `models.py` (so khớp my vs torch, hoán vị token, gradient), phần `visualize.py` và `evaluate.py` cho các thư mục runs được viết với sự hỗ trự của Claude.ai.
+Phần sanity test cuối `models.py` (so khớp my vs torch, hoán vị token, gradient), phần `visualize.py` và `evaluate.py` cho các thư mục runs được viết với sự hỗ trợ của Claude.ai.

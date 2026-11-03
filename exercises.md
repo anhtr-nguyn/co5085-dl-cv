@@ -9,7 +9,7 @@ title: E1–E3
 
 - **Dataset dùng chung:** CIFAR-10 (10 lớp, ảnh màu 32×32). Split cố định (`split_seed=912`): train 40,000 / val 10,000 / test 10,000 (test set gốc, chỉ dùng một lần ở cuối).
 - **Code:** [E1](https://github.com/anhtr-nguyn/co5085-dl-cv/tree/main/E1) · [E2](https://github.com/anhtr-nguyn/co5085-dl-cv/tree/main/E2) · [E3](https://github.com/anhtr-nguyn/co5085-dl-cv/tree/main/E3)
-- **Báo cáo PDF chung:** [reports/exercises.pdf](reports/exercises.pdf) *(cập nhật: W9 thêm E1+E2, W10 thêm E3)*
+- **Báo cáo PDF chung:** [reports/exercises.pdf](reports/exercises.pdf) *(gồm E1, E2, E3)*
 
 | Bài | Nội dung | Trạng thái | Hạn |
 |---|---|---|---|
@@ -29,7 +29,7 @@ Softmax, MLP và CNN trên ảnh CIFAR-10, training loop tự viết. Adam lr 1e
 
 - CNN vượt xa hai model trên vector flatten dù ít tham số hơn MLP gần 6 lần.
 - Augmentation chỉ có lợi cho CNN (+4.2 điểm); với MLP và softmax lại làm giảm accuracy vì model trên vector flatten không bất biến với dịch chuyển.
-- Cặp lớp nhầm nhiều nhất ở mọi model là cat ↔ dog.
+- Gộp cả hai chiều, cặp lớp nhầm nhiều nhất ở mọi model (không aug) là cat ↔ dog; riêng softmax, nhầm một chiều lớn nhất là deer → frog.
 
 ## E2
 
@@ -37,13 +37,13 @@ MSA tự viết (Linear, nhân ma trận, softmax, ghép head) đối chiếu v�
 
 | Tokenizer | #Token | Params | Test acc, MSA tự viết (%) | Test acc, MSA PyTorch (%) | Peak mem train, tự viết / PyTorch (MB) |
 |---|---|---|---|---|---|
-| Patch 4×4 | 64 | 546,186 | 80.37 ± 0.59 | 79.93 ± 0.28 | 325 / 267 |
-| Row | 32 | 548,234 | 71.85 ± 0.30 | 72.00 ± 0.51 | 161 / 151 |
-| CNN-stem | 64 | 691,082 | 85.42 ± 0.33 | 85.47 ± 0.21 | 692 / 406 |
+| Patch 4×4 | 64 | 546,186 | 80.37 ± 0.59 | 79.93 ± 0.28 | 324 / 267 |
+| Row | 32 | 548,234 | 71.85 ± 0.30 | 72.00 ± 0.51 | 163 / 152 |
+| CNN-stem | 64 | 691,082 | 85.42 ± 0.33 | 85.47 ± 0.21 | 463 / 406 |
 
-- MSA tự viết và PyTorch cho accuracy tương đương (chênh lệch nhỏ hơn dao động giữa các seed) và tốc độ train như nhau; bản PyTorch ít bộ nhớ hơn và inference nhanh hơn 12–32% nhờ kernel attention hợp nhất.
+- MSA tự viết và PyTorch cho accuracy tương đương (chênh lệch trung bình ≤ 0.44 điểm, cùng cỡ độ lệch chuẩn giữa các seed và đổi dấu theo seed) và thời gian một bước train gần như bằng nhau; bản PyTorch ít bộ nhớ hơn và inference nhanh hơn 12–32% nhờ kernel attention hợp nhất.
 - CNN-stem > patch > row: inductive bias cục bộ của convolution giúp ViT nhỏ học tốt hơn trên 40k ảnh; row mất cấu trúc theo chiều ngang.
-- ViT tốt nhất (85.5%) vẫn thua CNN của E1 (87.75%); tăng model patch lên 3.2M tham số chỉ đạt 81.9%.
+- ViT tốt nhất (85.5%) vẫn thua CNN của E1 (87.75%); tăng model patch lên 3.2M tham số (200 epoch, 1 seed) chỉ đạt 81.9%.
 
 ## E3
 
