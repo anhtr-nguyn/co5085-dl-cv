@@ -10,7 +10,7 @@ Trang web: https://anhtr-nguyn.github.io/co5085-dl-cv/
 |---|---|---|
 | `E1/` | Softmax / MLP / CNN trên CIFAR-10 | Hoàn thành |
 | `E2/` | MSA tự viết vs PyTorch, tokenization | Hoàn thành |
-| `E3/` | LSTM / GRU | Chưa làm |
+| `E3/` | LSTM / GRU trên ảnh dạng chuỗi | Hoàn thành |
 | `A1/` | CNN vs Transformer trên tập ảnh lớn | Chưa làm |
 | `A2/` | Chủ đề tự chọn + phân tích paper | Chưa làm |
 | `reports/` | Báo cáo PDF (`exercises.pdf`, `a1.pdf`, `a2.pdf`) | |

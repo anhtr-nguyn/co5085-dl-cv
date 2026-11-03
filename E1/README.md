@@ -80,3 +80,6 @@ Hình: `outputs/runs/<run>/figs/` (learning curves, confusion matrix val/test, m
         ├── runs/<run>/         config.yaml, log.json, test_metrics.json, figs/, best.pt
         ├── figs/               compare_curves.png, samples.png
         └── results.{md,csv}
+
+## Sử dụng AI
+Phần sanity test cuối `models.py` (so khớp my vs torch, hoán vị token, gradient), phần `visualize.py` và `evaluate.py` cho các thư mục runs được viết với sự hỗ trự của Claude.ai.

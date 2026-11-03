@@ -15,7 +15,7 @@ title: E1–E3
 |---|---|---|---|
 | E1 | Softmax / MLP / CNN | Hoàn thành | 02/11/2026 |
 | E2 | MSA tự viết vs PyTorch, tokenization | Hoàn thành | 02/11/2026 |
-| E3 | LSTM / GRU | Chưa làm | 09/11/2026 |
+| E3 | LSTM / GRU | Hoàn thành | 09/11/2026 |
 
 ## E1
 
@@ -47,4 +47,26 @@ MSA tự viết (Linear, nhân ma trận, softmax, ghép head) đối chiếu v�
 
 ## E3
 
-LSTM / GRU trên ảnh dạng chuỗi, so sánh với baseline MLP/CNN của E1. *(Chưa thực hiện.)*
+`nn.LSTM` / `nn.GRU` (2 tầng, hidden 256, phân loại từ hidden state ở bước cuối) trên ảnh CIFAR-10 dạng chuỗi theo hàng (32 bước), cột (32 bước) và patch 4×4 (64 bước). AdamW + warmup/cosine, 100 epoch, có augmentation, 5 seed, cùng split với E1. Chi tiết: [E3/README.md](https://github.com/anhtr-nguyn/co5085-dl-cv/blob/main/E3/README.md).
+
+| Model | Params | Row (%) | Col (%) | Patch 4×4 (%) |
+|---|---|---|---|---|
+| LSTM | 842K–891K | 68.15 ± 0.59 | 67.47 ± 0.09 | 72.27 ± 0.31 |
+| GRU | 632K–669K | 69.40 ± 0.31 | 70.90 ± 0.32 | 75.66 ± 0.42 |
+| E1 MLP (baseline) | 9.05M | 53.60 ± 0.41 | | |
+| E1 CNN (baseline) | 1.56M | 87.75 ± 0.16 | | |
+
+Phép thử thứ tự trên test, chuỗi theo hàng (test acc %):
+
+| Model | Đủ chuỗi | Prefix 50% | Đảo ngược | Xáo trộn |
+|---|---|---|---|---|
+| GRU | 69.40 | 30.08 | 30.82 | 25.74 |
+| LSTM | 68.15 | 28.49 | 30.69 | 27.15 |
+| E1 CNN | 87.75 | 48.40 | 39.47 | 24.77 |
+| E1 MLP | 53.60 | 29.44 | 25.32 | 27.05 |
+
+![Prefix accuracy](E3/outputs/figs/prefix_acc.png)
+
+- GRU tốt hơn LSTM ở cả 3 cách biểu diễn dù ít hơn 25% tham số; biểu diễn patch tốt nhất (75.7%).
+- Mọi RNN thua CNN 12–20 điểm nhưng hơn MLP 14–22 điểm với số tham số ít hơn 10–14 lần.
+- Accuracy của RNN tăng dần theo số bước đã đọc, và sụt mạnh khi đảo ngược hoặc xáo trộn thứ tự hàng/patch: RNN học được trình tự có hướng. Với chuỗi theo cột, đảo ngược gần như không ảnh hưởng vì augmentation lật ngang đã dạy model đọc theo cả hai chiều.

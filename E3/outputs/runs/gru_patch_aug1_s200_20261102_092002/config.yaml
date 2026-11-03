@@ -1,0 +1,27 @@
+model:
+  name: rnn
+  params:
+    cell: gru
+    seq_type: patch
+    hidden_dim: 256
+    num_layers: 2
+    bidirectional: false
+    dropout: 0.1
+    patch_size: 4
+data:
+  batch_size: 128
+  val_size: 10000
+  split_seed: 912
+  num_workers: 4
+  augment: true
+train:
+  epochs: 100
+  warmup_epochs: 2
+  lr: 0.001
+  weight_decay: 0.01
+  grad_clip: 1.0
+  eval_every: 1
+  seed: 200
+output:
+  root: outputs/runs
+  n_error_samples: 32

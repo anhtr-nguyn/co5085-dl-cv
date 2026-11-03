@@ -92,4 +92,4 @@ Hình: `outputs/runs/<run>/figs/` (learning curves, confusion matrix val/test, m
     └── outputs/                (chỉ commit log, metric, hình; không commit *.pt)
 
 ## Sử dụng AI
-Phần sanity test cuối `models.py` (so khớp my vs torch, hoán vị token, gradient) được sinh bằng Claude.ai rồi chỉnh lại.
+Phần sanity test cuối `models.py` (so khớp my vs torch, hoán vị token, gradient), phần `visualize.py` và `evaluate.py` cho các thư mục runs được viết với sự hỗ trự của Claude.ai.
