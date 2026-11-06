@@ -235,3 +235,5 @@ data_cache/
 !A1/outputs/*.json
 !A1/outputs/sweep/*/config.yaml
 !A1/outputs/sweep/*/log.json
+!A2/outputs/*.json
+!A2/outputs/*.md

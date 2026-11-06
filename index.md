@@ -21,6 +21,6 @@ title: Trang chủ
 | E2 | MSA tự viết vs PyTorch, tokenization | [Xem](exercises.html#e2) | Hoàn thành | 02/11/2026 |
 | E3 | LSTM / GRU | [Xem](exercises.html#e3) | Hoàn thành | 09/11/2026 |
 | A1 | CNN vs Transformer trên Food-101 | [Xem](a1.html) | A1.1 hoàn thành (dataset + protocol) · A1.2 đang thực hiện | A1.1: 26/10/2026 · A1.2: 09/11/2026 |
-| A2 | Chủ đề tự chọn + phân tích paper | [Xem](a2.html) | Chưa bắt đầu | A2.1: 02/11/2026 · A2.2: 16/11/2026 |
+| A2 | Monocular 3D detection trên KITTI + phân tích MonoCoP (CVPR 2026) | [Xem](a2.html) | A2.1 hoàn thành (chủ đề + paper + dữ liệu) · A2.2 đang thực hiện | A2.1: 02/11/2026 · A2.2: 16/11/2026 |
 
 Báo cáo PDF: [E1–E3](reports/exercises.pdf) · A1, A2 *(cập nhật theo từng mốc nộp)*

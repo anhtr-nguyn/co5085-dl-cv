@@ -1,0 +1,125 @@
+{
+  "train": {
+    "images": 3712,
+    "images_without_eval_class": 0,
+    "objects": {
+      "Car": 14357,
+      "DontCare": 5399,
+      "Pedestrian": 2207,
+      "Van": 1297,
+      "Cyclist": 734,
+      "Truck": 488,
+      "Misc": 337,
+      "Tram": 224,
+      "Person_sitting": 56
+    },
+    "difficulty": {
+      "Car": {
+        "Ignored": 3604,
+        "Easy": 3064,
+        "Moderate": 4770,
+        "Hard": 2919
+      },
+      "Pedestrian": {
+        "Ignored": 103,
+        "Easy": 1176,
+        "Moderate": 654,
+        "Hard": 274
+      },
+      "Cyclist": {
+        "Ignored": 140,
+        "Easy": 373,
+        "Moderate": 181,
+        "Hard": 40
+      }
+    },
+    "depth_m": {
+      "Car": {
+        "mean": 29.34568781778923,
+        "median": 26.95,
+        "p95": 60.54199999999999,
+        "max": 86.18,
+        "frac_ge_40m": 0.2462213554363725
+      },
+      "Pedestrian": {
+        "mean": 18.762011780697776,
+        "median": 15.92,
+        "p95": 39.62799999999998,
+        "max": 73.93,
+        "frac_ge_40m": 0.047575894879927506
+      },
+      "Cyclist": {
+        "mean": 21.488732970027247,
+        "median": 19.96,
+        "p95": 40.39500000000001,
+        "max": 61.68,
+        "frac_ge_40m": 0.055858310626702996
+      }
+    }
+  },
+  "val": {
+    "images": 3769,
+    "images_without_eval_class": 0,
+    "objects": {
+      "Car": 14385,
+      "DontCare": 5896,
+      "Pedestrian": 2280,
+      "Van": 1617,
+      "Cyclist": 893,
+      "Misc": 636,
+      "Truck": 606,
+      "Tram": 287,
+      "Person_sitting": 166
+    },
+    "difficulty": {
+      "Car": {
+        "Ignored": 3422,
+        "Easy": 2907,
+        "Moderate": 4969,
+        "Hard": 3087
+      },
+      "Pedestrian": {
+        "Ignored": 108,
+        "Easy": 1134,
+        "Moderate": 605,
+        "Hard": 433
+      },
+      "Cyclist": {
+        "Ignored": 293,
+        "Easy": 281,
+        "Moderate": 263,
+        "Hard": 56
+      }
+    },
+    "depth_m": {
+      "Car": {
+        "mean": 26.682587417448733,
+        "median": 24.0,
+        "p95": 56.935999999999915,
+        "max": 83.27,
+        "frac_ge_40m": 0.20479666319082376
+      },
+      "Pedestrian": {
+        "mean": 16.146837719298244,
+        "median": 13.55,
+        "p95": 36.887999999999955,
+        "max": 72.04,
+        "frac_ge_40m": 0.041666666666666664
+      },
+      "Cyclist": {
+        "mean": 27.274792833146694,
+        "median": 23.64,
+        "p95": 58.897999999999996,
+        "max": 78.97,
+        "frac_ge_40m": 0.21948488241881298
+      }
+    }
+  },
+  "image_sizes": {
+    "1242x375": 6057,
+    "1224x370": 770,
+    "1238x374": 358,
+    "1241x376": 296
+  },
+  "test_images": 7518
+}
