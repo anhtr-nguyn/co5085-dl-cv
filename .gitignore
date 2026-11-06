@@ -231,3 +231,7 @@ data_cache/
 !**/outputs/runs/*/log.json
 !**/outputs/runs/*/test_metrics.json
 !**/outputs/runs/*/figs/**
+!A1/outputs/*.md
+!A1/outputs/*.json
+!A1/outputs/sweep/*/config.yaml
+!A1/outputs/sweep/*/log.json
