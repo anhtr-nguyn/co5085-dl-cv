@@ -1,0 +1,11 @@
+# <arch> <mode> <lr>
+# head/partial/full: argmax val acc trong outputs/sweep.md (python evaluate.py)
+# scratch: cố định, không dò
+resnet50 scratch 1e-3
+deit_s   scratch 5e-4
+resnet50 head    1e-2
+deit_s   head    1e-2
+resnet50 partial 1e-2
+deit_s   partial 1e-3
+resnet50 full    1e-3
+deit_s   full    3e-4

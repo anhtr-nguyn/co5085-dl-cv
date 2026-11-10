@@ -1,0 +1,60 @@
+{
+  "gpu": "NVIDIA A100 80GB PCIe",
+  "batch_size": 128,
+  "results": [
+    {
+      "arch": "resnet50",
+      "mode": "head",
+      "trainable": 206949,
+      "train_ms": 19.931576100643724,
+      "train_img_s": 6421.970814233101,
+      "infer_img_s": 6473.44968264496,
+      "peak_mem_mb": 891.4013671875
+    },
+    {
+      "arch": "resnet50",
+      "mode": "partial",
+      "trainable": 15171685,
+      "train_ms": 24.158036338631064,
+      "train_img_s": 5298.443888641539,
+      "infer_img_s": 6463.237851025164,
+      "peak_mem_mb": 940.455078125
+    },
+    {
+      "arch": "resnet50",
+      "mode": "full",
+      "trainable": 23714981,
+      "train_ms": 64.49393810005859,
+      "train_img_s": 1984.682650351037,
+      "infer_img_s": 6470.167942694319,
+      "peak_mem_mb": 5834.2490234375
+    },
+    {
+      "arch": "deit_s",
+      "mode": "head",
+      "trainable": 38885,
+      "train_ms": 15.452258938457817,
+      "train_img_s": 8283.578505239235,
+      "infer_img_s": 8356.883990153694,
+      "peak_mem_mb": 469.78173828125
+    },
+    {
+      "arch": "deit_s",
+      "mode": "partial",
+      "trainable": 10686437,
+      "train_ms": 33.214022039901465,
+      "train_img_s": 3853.7940345263805,
+      "infer_img_s": 8382.36172333216,
+      "peak_mem_mb": 2491.916015625
+    },
+    {
+      "arch": "deit_s",
+      "mode": "full",
+      "trainable": 21704549,
+      "train_ms": 51.97237337939441,
+      "train_img_s": 2462.8469257235884,
+      "infer_img_s": 8419.563454666955,
+      "peak_mem_mb": 4644.6611328125
+    }
+  ]
+}

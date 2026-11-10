@@ -1,0 +1,25 @@
+model:
+  arch: resnet50          # resnet50 | deit_s
+  mode: full              # scratch | head | partial | full
+  drop_path: 0.1
+
+data:
+  batch_size: 128
+  split_seed: 912         # val = 10% mỗi lớp của split train chính thức
+  augment: standard       # standard (RRC + flip + TrivialAugmentWide) | none
+  num_workers: 14
+
+train:
+  epochs: 30
+  lr: 1.0e-4
+  weight_decay: 0.05
+  warmup_frac: 0.05       # tỉ lệ số bước warmup tuyến tính, sau đó cosine về 0
+  grad_clip: 1.0
+  label_smoothing: 0.1
+  amp: bf16               # bf16 | none
+  seed: 912
+  eval_test: true         # false khi dò learning rate: chỉ dùng val
+
+
+output:
+  root: outputs/runs      # mỗi run: <arch>_<mode>_s<seed>_<datetime>/
