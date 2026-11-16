@@ -22,6 +22,7 @@ from collections import defaultdict
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
 import torch
 import yaml
@@ -181,22 +182,32 @@ def plot_acc_by_mode(groups):
 
 
 def plot_acc_vs_cost(groups):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), sharey=True)
     markers = {"scratch": "x", "head": "s", "partial": "^", "full": "o"}
     for (arch, mode), rs in sorted(groups.items(), key=lambda kv: (kv[0][0], MODES.index(kv[0][1]))):
         acc = np.mean([100 * r["test"]["acc"] for r in rs])
         t = np.mean([r["log"]["train_time_s"] / 60 for r in rs])
         p = rs[0]["log"]["params_trainable"] / 1e6
         for ax, xv in zip(axes, (t, p)):
-            ax.scatter(xv, acc, color=COLORS[arch], marker=markers[mode], s=70,
-                       label=f"{ARCH_NAMES[arch]}, {MODE_NAMES[mode]}")
+            ax.scatter(xv, acc, color=COLORS[arch], marker=markers[mode], s=70)
     axes[0].set_xlabel("Thời gian huấn luyện (phút, trung bình các seed)")
     axes[1].set_xlabel("Tham số trainable (triệu, thang log)"); axes[1].set_xscale("log")
     axes[0].set_ylabel("Test accuracy (%)")
     for ax in axes:
         ax.grid(alpha=0.3)
-    axes[1].legend(fontsize=7, loc="lower right")
-    fig.tight_layout()
+    family_handles = [
+        Line2D([0], [0], marker="o", linestyle="", color=COLORS[arch],
+               label=ARCH_NAMES[arch], markersize=7)
+        for arch in ARCH_NAMES
+    ]
+    mode_handles = [
+        Line2D([0], [0], marker=markers[mode], linestyle="", color="#555555",
+               label=MODE_NAMES[mode], markersize=7)
+        for mode in MODES
+    ]
+    fig.legend(handles=family_handles + mode_handles, loc="lower center", ncol=6,
+               frameon=False, fontsize=8, bbox_to_anchor=(0.5, 0.01))
+    fig.tight_layout(rect=(0, 0.12, 1, 1))
     fig.savefig("outputs/figs/acc_vs_cost.png", dpi=200)
     plt.close(fig)
 
@@ -238,7 +249,7 @@ def plot_confusion(groups, names, n_pairs=8):
     plt.close(fig)
 
 
-def plot_error_samples(run, names, n=24, ncols=8):
+def plot_error_samples(run, names, n=8, ncols=4):
     from data import get_datasets, denormalize
     preds = torch.load(os.path.join(run["dir"], "val_preds.pt"))
     _, val_ds, _ = get_datasets(augment="none", split_path=None)
@@ -246,13 +257,14 @@ def plot_error_samples(run, names, n=24, ncols=8):
     wrong = np.flatnonzero(p != y)
     wrong = wrong[np.argsort(-conf[wrong])][:n]
     nrows = int(np.ceil(len(wrong) / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 1.9, nrows * 2.2))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 2.2, nrows * 2.5))
+    axes = np.atleast_1d(axes)
     for ax in axes.flat:
         ax.axis("off")
     for ax, i in zip(axes.flat, wrong):
         x, _ = val_ds[int(i)]
         ax.imshow(denormalize(x).permute(1, 2, 0).numpy())
-        ax.set_title(f"T: {names[y[i]]}\nP: {names[p[i]]} ({conf[i]:.2f})", fontsize=6)
+        ax.set_title(f"T: {names[y[i]]}\nP: {names[p[i]]} ({conf[i]:.2f})", fontsize=8)
     fig.tight_layout()
     name = f"{run['arch']}_{run['mode']}"
     fig.savefig(f"outputs/figs/error_samples_{name}.png", dpi=150)
