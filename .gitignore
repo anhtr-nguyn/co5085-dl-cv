@@ -237,4 +237,5 @@ data_cache/
 !A1/outputs/sweep/*/log.json
 !A2/outputs/*.json
 !A2/outputs/*.md
-./report_tex/
+!A2/outputs/analysis/*.json
+report_tex/

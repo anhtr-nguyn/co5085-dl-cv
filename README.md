@@ -12,8 +12,8 @@ Trang web: https://anhtr-nguyn.github.io/co5085-dl-cv/
 | `E2/` | MSA tự viết vs PyTorch, tokenization | Hoàn thành |
 | `E3/` | LSTM / GRU trên ảnh dạng chuỗi | Hoàn thành |
 | `A1/` | ResNet-50 vs DeiT-S trên Food-101: from-scratch, freeze backbone, freeze một phần, full fine-tune | Hoàn thành (A1.1 + A1.2) |
-| `A2/` | Monocular 3D detection trên KITTI, phân tích paper MonoCoP (CVPR 2026) | A2.1 hoàn thành · A2.2 đang thực hiện |
-| `reports/` | Báo cáo PDF (hiện có `exercises.pdf`; `a1.pdf`, `a2.pdf` sẽ bổ sung) | |
+| `A2/` | Monocular 3D detection trên KITTI: tái hiện MonoCoP (CVPR 2026) và so sánh với baseline dự đoán song song cùng code | Hoàn thành (A2.1 + A2.2) |
+| `reports/` | Báo cáo PDF: `exercises.pdf` (E1–E3), `a1.pdf`, `a2.pdf` | |
 
 ## Môi trường
 
